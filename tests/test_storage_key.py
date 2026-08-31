@@ -26,14 +26,26 @@ def load_plugin(prefix=""):
     botocore = types.ModuleType("botocore")
     botocore_config = types.ModuleType("botocore.config")
     botocore_config.Config = lambda *args, **kwargs: None
-    saved = {name: sys.modules.get(name) for name in ("boto3", "botocore", "botocore.config")}
-    sys.modules.update({"boto3": boto3, "botocore": botocore, "botocore.config": botocore_config})
+    saved = {
+        name: sys.modules.get(name)
+        for name in ("boto3", "botocore", "botocore.config")
+    }
+    sys.modules.update(
+        {
+            "boto3": boto3,
+            "botocore": botocore,
+            "botocore.config": botocore_config,
+        }
+    )
 
     import os
+
     previous_prefix = os.environ.get("S3_PREFIX")
     os.environ["S3_PREFIX"] = prefix
     try:
-        spec = importlib.util.spec_from_file_location("storage_s3_plugin", PLUGIN)
+        spec = importlib.util.spec_from_file_location(
+            "storage_s3_plugin", PLUGIN
+        )
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
@@ -54,13 +66,18 @@ class ObjectKeyTest(unittest.TestCase):
         self.plugin = load_plugin()
 
     def test_joins_namespace_and_key(self):
-        self.assertEqual(self.plugin.object_key("recordings", "cam-1/seg-0.m4s"),
-                         "recordings/cam-1/seg-0.m4s")
+        self.assertEqual(
+            self.plugin.object_key("recordings", "cam-1/seg-0.m4s"),
+            "recordings/cam-1/seg-0.m4s",
+        )
 
     def test_strips_stray_separators(self):
         # Callers assemble these from ids that may or may not carry slashes;
         # a doubled separator makes two different keys for the same object.
-        self.assertEqual(self.plugin.object_key("/recordings/", "/cam-1"), "recordings/cam-1")
+        self.assertEqual(
+            self.plugin.object_key("/recordings/", "/cam-1"),
+            "recordings/cam-1",
+        )
 
     def test_skips_empty_segments(self):
         self.assertEqual(self.plugin.object_key("", "cam-1"), "cam-1")
@@ -80,14 +97,21 @@ class ObjectKeyTest(unittest.TestCase):
 
     def test_allows_dots_that_are_not_traversal(self):
         # A refusal that catches ordinary filenames would be its own bug.
-        self.assertEqual(self.plugin.object_key("recordings", "clip..mp4"),
-                         "recordings/clip..mp4")
-        self.assertEqual(self.plugin.object_key("recordings", "...hidden"),
-                         "recordings/...hidden")
+        self.assertEqual(
+            self.plugin.object_key("recordings", "clip..mp4"),
+            "recordings/clip..mp4",
+        )
+        self.assertEqual(
+            self.plugin.object_key("recordings", "...hidden"),
+            "recordings/...hidden",
+        )
 
     def test_a_configured_prefix_cannot_be_escaped(self):
         plugin = load_plugin(prefix="tenant-a")
-        self.assertEqual(plugin.object_key("recordings", "cam-1"), "tenant-a/recordings/cam-1")
+        self.assertEqual(
+            plugin.object_key("recordings", "cam-1"),
+            "tenant-a/recordings/cam-1",
+        )
         with self.assertRaises(ValueError):
             plugin.object_key("recordings", "../../tenant-b/cam-1")
 
