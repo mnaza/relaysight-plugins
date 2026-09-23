@@ -2,8 +2,9 @@
 
 Reference plugins for RelaySight, a video management system.
 
-Two of them. One connects your own AI service, one signs
-URLs for S3-compatible storage.
+Three of them. One connects your own AI service, one signs
+URLs for S3-compatible storage, one posts alerts to a
+webhook.
 
 Plugins are a Community feature. They work the same in the
 self-hosted and the managed edition. Custom AI and custom
@@ -18,10 +19,11 @@ protocol from a description alone.
 ```text
 ai-http-adapter/   forwards analysis to your HTTP inference service
 storage-s3/        presigned URLs for S3, MinIO, Backblaze B2
+webhook-sink/      posts fleet events to Slack, Discord or your own endpoint
 tests/             the parts worth testing without a network
 ```
 
-Both speak the plugin protocol over HTTP. The core knows
+All three speak the plugin protocol over HTTP. The core knows
 nothing about them beyond the contract. So a plugin can be
 written in any language, and replaced without touching the
 VMS.
