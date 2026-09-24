@@ -20,7 +20,26 @@ protocol from a description alone.
 ai-http-adapter/   forwards analysis to your HTTP inference service
 storage-s3/        presigned URLs for S3, MinIO, Backblaze B2
 webhook-sink/      posts fleet events to Slack, Discord or your own endpoint
+skeletons/         the smallest plugin the core will talk to, in Python and Go
 tests/             the parts worth testing without a network
+```
+
+## Starting your own
+
+`skeletons/python` and `skeletons/go` are the same plugin twice: a manifest, a
+health check, and one capability. Copy one, change the manifest, fill in the
+handler.
+
+Both pass the core's conformance check as they stand:
+
+```bash
+python3 skeletons/python/plugin.py          # then, in the core repository:
+make check-plugin ENDPOINT=http://localhost:9100
+```
+
+```bash
+cd skeletons/go && go run .
+make check-plugin ENDPOINT=http://localhost:9101
 ```
 
 All three speak the plugin protocol over HTTP. The core knows
